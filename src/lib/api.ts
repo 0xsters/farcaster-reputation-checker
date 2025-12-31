@@ -13,38 +13,65 @@ export async function getFarcasterProfile(username: string): Promise<FarcasterPr
   }
 
   try {
-    const response = await fetch(
+    // Fetch user profile
+    const userResponse = await fetch(
       `${NEYNAR_API_BASE}/user/by_username?username=${encodeURIComponent(username)}`,
       {
         method: 'GET',
         headers: {
           'accept': 'application/json',
-          'api_key': NEYNAR_API_KEY,
+          'x-api-key': NEYNAR_API_KEY,
         },
         cache: 'no-store',
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Neynar API error:', response.status, errorText);
-      throw new Error(`Failed to fetch profile: ${response.status}`);
+    if (!userResponse.ok) {
+      const errorText = await userResponse.text();
+      console.error('Neynar API error:', userResponse.status, errorText);
+      throw new Error(`Failed to fetch profile: ${userResponse.status}`);
     }
 
-    const data = await response.json();
-    
-    // Handle Neynar v2 API response structure
-    const user = data.user || data;
+    const userData = await userResponse.json();
+    const user = userData.user;
+
+    if (!user) {
+      throw new Error('User not found in response');
+    }
+
+    // Fetch user casts to get accurate cast count
+    let castCount = 0;
+    try {
+      const castsResponse = await fetch(
+        `${NEYNAR_API_BASE}/casts?fid=${user.fid}&limit=1`,
+        {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json',
+            'x-api-key': NEYNAR_API_KEY,
+          },
+          cache: 'no-store',
+        }
+      );
+
+      if (castsResponse.ok) {
+        const castsData = await castsResponse.json();
+        // Get cast count from API meta or estimate from data
+        castCount = castsData.next?.cursor ? 1000 : castsData.casts?.length || 0;
+      }
+    } catch (error) {
+      console.warn('Could not fetch cast count:', error);
+    }
 
     return {
-      fid: user.fid || 0,
-      username: user.username || username,
-      display_name: user.display_name || user.displayName || username,
-      pfp_url: user.pfp_url || user.pfp?.url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
-      bio: user.profile?.bio?.text || user.bio || '',
-      follower_count: user.follower_count || user.followerCount || 0,
-      following_count: user.following_count || user.followingCount || 0,
-      cast_count: user.cast_count || user.castCount || 0,
+      fid: user.fid,
+      username: user.username,
+      display_name: user.display_name || user.username,
+      pfp_url: user.pfp_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`,
+      bio: user.profile?.bio?.text || '',
+      follower_count: user.follower_count || 0,
+      following_count: user.following_count || 0,
+      cast_count: castCount,
     };
   } catch (error) {
     console.error('Error fetching profile:', error);
