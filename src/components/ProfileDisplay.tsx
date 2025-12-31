@@ -1,5 +1,4 @@
 import { FarcasterProfile } from '@/types';
-import Image from 'next/image';
 
 interface ProfileDisplayProps {
   profile: FarcasterProfile;
@@ -10,12 +9,18 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-purple-300/30">
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
         {/* Avatar */}
-        <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-purple-400">
+        <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-purple-400 flex-shrink-0">
           {profile.pfp_url ? (
             <img
               src={profile.pfp_url}
               alt={profile.display_name}
               className="w-full h-full object-cover"
+              loading="lazy"
+              onError={(e) => {
+                // Fallback to dicebear on image error
+                const target = e.target as HTMLImageElement;
+                target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`;
+              }}
             />
           ) : (
             <div className="w-full h-full bg-purple-600 flex items-center justify-center text-4xl text-white">
@@ -32,7 +37,7 @@ export default function ProfileDisplay({ profile }: ProfileDisplayProps) {
           <p className="text-xl text-purple-200 mb-4">@{profile.username}</p>
           
           {profile.bio && (
-            <p className="text-purple-100 mb-6">{profile.bio}</p>
+            <p className="text-purple-100 mb-6 max-w-2xl">{profile.bio}</p>
           )}
 
           {/* Stats Grid */}
