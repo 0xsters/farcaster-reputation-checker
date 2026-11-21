@@ -39,11 +39,14 @@ export async function getFarcasterProfile(username: string): Promise<FarcasterPr
       throw new Error('User not found in response');
     }
 
-    // Fetch user casts to get accurate cast count
+    // Fetch user casts to get accurate cast count.
+    // NOTE: the old /v2/farcaster/casts?fid= endpoint was removed by Neynar
+    // (now 400 "casts is required"); /feed/user/casts returns the same
+    // shape (casts array + next.cursor) used by the heuristic below.
     let castCount = 0;
     try {
       const castsResponse = await fetch(
-        `${NEYNAR_API_BASE}/casts?fid=${user.fid}&limit=1`,
+        `${NEYNAR_API_BASE}/feed/user/casts?fid=${user.fid}&limit=1`,
         {
           method: 'GET',
           headers: {

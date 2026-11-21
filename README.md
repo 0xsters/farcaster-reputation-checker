@@ -115,13 +115,13 @@ This app uses the Neynar API to fetch real-time Farcaster data:
 
 ### API Key Setup
 
-The Neynar API key is already configured in `.env.example`. Just copy it to `.env`:
+Copy `.env.example` to `.env` and fill in your own Neynar API key:
 
 ```bash
 cp .env.example .env
 ```
 
-Your API key: `6C071A55-1EE8-4943-871B-52315E3EBD5E`
+Get a key at https://dev.neynar.com and set it as `NEXT_PUBLIC_NEYNAR_API_KEY` in `.env`. Never commit a real key to the repo.
 
 ## Deployment
 
@@ -131,7 +131,7 @@ Your API key: `6C071A55-1EE8-4943-871B-52315E3EBD5E`
 2. Visit [vercel.com](https://vercel.com)
 3. Import repository: `0xsters/farcaster-reputation-checker`
 4. Add environment variable:
-   - `NEXT_PUBLIC_NEYNAR_API_KEY` = `6C071A55-1EE8-4943-871B-52315E3EBD5E`
+   - `NEXT_PUBLIC_NEYNAR_API_KEY` = your Neynar API key (from https://dev.neynar.com)
 5. Click Deploy
 6. Your app will be live in ~2 minutes! 🚀
 
