@@ -2,6 +2,10 @@
 
 A Farcaster mini app to check and analyze account reputation and social metrics.
 
+## Status
+
+Last verified 22 November 2026: `npm run build` passes (Next.js 14.2.35), `npm run lint` passes with one pre-existing warning in `src/components/ProfileDisplay.tsx` (plain `<img>` instead of `next/image`), and the production build serves `/`, `/profile/dwr`, and `/profile/vitalik.eth` with HTTP 200. The 22 November checks ran without a Neynar API key, so the profile pages used the mock-data fallback in `src/lib/api.ts`. Live Neynar data was last verified on 21 November 2026: user lookup and `/feed/user/casts` return data for `dwr` (fid 3) and `vitalik.eth` (fid 5650). No API key is bundled with this repo; set your own key as described below.
+
 ## Features
 
 - 🔍 Check Farcaster account reputation
@@ -22,8 +26,8 @@ A Farcaster mini app to check and analyze account reputation and social metrics.
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
-- Neynar API key (already configured)
+- npm (`package-lock.json` is committed, so `npm ci` works too)
+- A Neynar API key from https://dev.neynar.com (your own key; none is included in this repo)
 
 ### Installation
 
@@ -39,15 +43,38 @@ npm install
 
 # Copy environment variables
 cp .env.example .env
+```
 
-# The Neynar API key is already configured in .env.example
-# Just copy it to .env and you're ready to go!
+Edit `.env` and set `NEXT_PUBLIC_NEYNAR_API_KEY` to your Neynar API key. `.env.example` lists three variables:
 
-# Run development server
+| Variable | Required? |
+|---|---|
+| `NEXT_PUBLIC_NEYNAR_API_KEY` | Yes, for live Farcaster data. Without it the app falls back to mock data (see `src/lib/api.ts`). |
+| `NEXT_PUBLIC_AIRSTACK_API_KEY` | No. Present in `.env.example` but not read by the current code. |
+| `NEXT_PUBLIC_APP_URL` | No. Present in `.env.example` but not read by the current code. The template defaults to `http://localhost:3000`. |
+
+Never commit a real key: `.env` is git-ignored.
+
+Run the development server:
+
+```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the app!
+
+For a production build, set the key in `.env` before building, because `NEXT_PUBLIC_` values are baked in at build time:
+
+```bash
+npm run build
+npm run start
+```
+
+Check the code with:
+
+```bash
+npm run lint
+```
 
 ## Project Structure
 
@@ -71,7 +98,6 @@ farcaster-reputation-checker/
 │   │   └── reputation.ts               # Score calculation logic
 │   └── types/
 │       └── index.ts                    # TypeScript interfaces
-├── public/                              # Static assets
 ├── .env.example                         # Environment variables template
 └── README.md
 ```
@@ -115,23 +141,17 @@ This app uses the Neynar API to fetch real-time Farcaster data:
 
 ### API Key Setup
 
-Copy `.env.example` to `.env` and fill in your own Neynar API key:
-
-```bash
-cp .env.example .env
-```
-
-Get a key at https://dev.neynar.com and set it as `NEXT_PUBLIC_NEYNAR_API_KEY` in `.env`. Never commit a real key to the repo.
+Set `NEXT_PUBLIC_NEYNAR_API_KEY` in `.env` as described in Getting Started. Get a key at https://dev.neynar.com. Never commit a real key to the repo.
 
 ## Deployment
 
 ### Deploy to Vercel (Recommended)
 
-1. Push your code to GitHub (already done! ✅)
+1. Push your code to GitHub
 2. Visit [vercel.com](https://vercel.com)
 3. Import repository: `0xsters/farcaster-reputation-checker`
 4. Add environment variable:
-   - `NEXT_PUBLIC_NEYNAR_API_KEY` = your Neynar API key (from https://dev.neynar.com)
+   - `NEXT_PUBLIC_NEYNAR_API_KEY` = your Neynar API key (from https://dev.neynar.com; set it before deploying so the production build picks it up)
 5. Click Deploy
 6. Your app will be live in ~2 minutes! 🚀
 
@@ -181,17 +201,3 @@ Built with ❤️ by [@0xsters](https://github.com/0xsters)
 - [Neynar API](https://neynar.com/)
 - [Next.js Docs](https://nextjs.org/docs)
 - [Tailwind CSS](https://tailwindcss.com/)
-
----
-
-### Quick Start
-
-```bash
-git clone https://github.com/0xsters/farcaster-reputation-checker.git
-cd farcaster-reputation-checker
-npm install
-cp .env.example .env
-npm run dev
-```
-
-🎉 Start checking Farcaster reputations at http://localhost:3000
